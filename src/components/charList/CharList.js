@@ -1,52 +1,59 @@
+import { Component } from 'react/cjs/react.development';
+import Spinner from '../spinner/Spinner';
+import ErrorMessage from '../errorMessage/ErrorMessage';
+import MarvelService from '../../services/MarvelService';
 import './charList.scss';
-import abyss from '../../resources/img/abyss.jpg';
 
-const CharList = () => {
-    return (
-        <div className="char__list">
-            <ul className="char__grid">
-                <li className="char__item">
-                    <img src={abyss} alt="abyss"/>
-                    <div className="char__name">Abyss</div>
-                </li>
-                <li className="char__item char__item_selected">
-                    <img src={abyss} alt="abyss"/>
-                    <div className="char__name">Abyss</div>
-                </li>
-                <li className="char__item">
-                    <img src={abyss} alt="abyss"/>
-                    <div className="char__name">Abyss</div>
-                </li>
-                <li className="char__item">
-                    <img src={abyss} alt="abyss"/>
-                    <div className="char__name">Abyss</div>
-                </li>
-                <li className="char__item">
-                    <img src={abyss} alt="abyss"/>
-                    <div className="char__name">Abyss</div>
-                </li>
-                <li className="char__item">
-                    <img src={abyss} alt="abyss"/>
-                    <div className="char__name">Abyss</div>
-                </li>
-                <li className="char__item">
-                    <img src={abyss} alt="abyss"/>
-                    <div className="char__name">Abyss</div>
-                </li>
-                <li className="char__item">
-                    <img src={abyss} alt="abyss"/>
-                    <div className="char__name">Abyss</div>
-                </li>
-                <li className="char__item">
-                    <img src={abyss} alt="abyss"/>
-                    <div className="char__name">Abyss</div>
-                </li>
-            </ul>
-            <button className="button button__main button__long">
-                <div className="inner">load more</div>
-            </button>
-        </div>
-    )
+class CharList extends Component {
+    state = {
+        chars: null,
+        loading: true,
+        error: false
+    }
+
+    marvelService = new MarvelService();
+
+    updateChars = async () => {
+        try {
+            this.setState({chars: await this.marvelService.getAllCharacters(), loading: false});
+        } catch(err) {
+            this.setState({loading: false, error: true});
+        }
+    }
+
+    componentDidMount() {
+        this.updateChars();
+    }
+
+    render() {
+        const {chars, loading, error} = this.state;
+        return (
+            <div className="char__list">
+                <ul className="char__grid" style={loading || error ? {display: 'block', height: '1050px'} : null}>
+                    {loading ? <Spinner/> : null}
+                    {error ? <ErrorMessage/> : null}
+                    {!loading && !error ? <Chars chars={chars}/> : null}
+                </ul>
+                <button className="button button__main button__long">
+                    <div className="inner">load more</div>
+                </button>
+            </div>
+        )
+    }
+}
+
+const Chars = ({chars}) => {
+    return chars.map(char => {
+        const style = char.thumbnail === 'http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg'
+                        ? {objectFit: 'contain', width: '200px', height: '170px'}
+                        : {objectFit: 'cover'};
+        return (
+            <li key={char.id} className="char__item">
+                <img style={style} src={char.thumbnail} alt={char.name}/>
+                <div className="char__name">{char.name}</div>
+            </li>
+        )
+    });
 }
 
 export default CharList;
