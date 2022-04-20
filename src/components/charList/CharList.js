@@ -21,6 +21,20 @@ class CharList extends Component {
         }
     }
 
+    renderChars = (chars) => {
+        return chars.map(char => {
+            const style = char.thumbnail === 'http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg'
+                            ? {objectFit: 'contain', width: '200px', height: '170px'}
+                            : {objectFit: 'cover'};
+            return (
+                <li key={char.id} className="char__item" onClick={() => {this.props.onCharSelected(char.id)}}>
+                    <img style={style} src={char.thumbnail} alt={char.name}/>
+                    <div className="char__name">{char.name}</div>
+                </li>
+            )
+        });
+    }
+
     componentDidMount() {
         this.updateChars();
     }
@@ -29,10 +43,10 @@ class CharList extends Component {
         const {chars, loading, error} = this.state;
         return (
             <div className="char__list">
-                <ul className="char__grid" style={loading || error ? {display: 'block', height: '1050px'} : null}>
+                <ul className="char__grid" style={loading || error ? {display: 'block'} : null}>
                     {loading ? <Spinner/> : null}
                     {error ? <ErrorMessage/> : null}
-                    {!loading && !error ? <Chars chars={chars}/> : null}
+                    {!loading && !error ? this.renderChars(chars) : null}
                 </ul>
                 <button className="button button__main button__long">
                     <div className="inner">load more</div>
@@ -40,20 +54,6 @@ class CharList extends Component {
             </div>
         )
     }
-}
-
-const Chars = ({chars}) => {
-    return chars.map(char => {
-        const style = char.thumbnail === 'http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg'
-                        ? {objectFit: 'contain', width: '200px', height: '170px'}
-                        : {objectFit: 'cover'};
-        return (
-            <li key={char.id} className="char__item">
-                <img style={style} src={char.thumbnail} alt={char.name}/>
-                <div className="char__name">{char.name}</div>
-            </li>
-        )
-    });
 }
 
 export default CharList;
