@@ -6,7 +6,9 @@ import './charList.scss';
 
 class CharList extends Component {
     state = {
-        chars: null,
+        chars: [],
+        offset: 210,
+        charEnded: false,
         loading: true,
         error: false
     }
@@ -14,11 +16,21 @@ class CharList extends Component {
     marvelService = new MarvelService();
 
     updateChars = async () => {
+        this.setState({loading: true});
+        const newChars = await this.marvelService.getAllCharacters(this.state.offset);
         try {
-            this.setState({chars: await this.marvelService.getAllCharacters(), loading: false});
+            this.setState(({chars}) => 
+                ({chars: [...chars, ...newChars], loading: false, charEnded: newChars.length < 9})
+            );
         } catch(err) {
             this.setState({loading: false, error: true});
         }
+    }
+
+    onUpdateOffset = () => {
+        new Promise(resolve => 
+            this.setState(({offset}) => ({offset: offset + 9}), resolve))
+            .then(this.updateChars);
     }
 
     renderChars = (chars) => {
@@ -35,20 +47,35 @@ class CharList extends Component {
         });
     }
 
+    onScroll = () => {
+        if (window.pageYOffset + document.documentElement.clientHeight >= document.documentElement.scrollHeight - 50 && !this.state.loading) {
+            this.onUpdateOffset();
+        }
+    }
+
     componentDidMount() {
         this.updateChars();
+        window.addEventListener('scroll', this.onScroll);
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener('scroll', this.onScroll);
     }
 
     render() {
-        const {chars, loading, error} = this.state;
+        const {chars, loading, error, charEnded} = this.state;
         return (
             <div className="char__list">
-                <ul className="char__grid" style={loading || error ? {display: 'block'} : null}>
-                    {loading ? <Spinner/> : null}
-                    {error ? <ErrorMessage/> : null}
-                    {!loading && !error ? this.renderChars(chars) : null}
+                {error ? <ErrorMessage/> : null}
+                <ul className="char__grid">
+                    {!error ? this.renderChars(chars) : null}
                 </ul>
-                <button className="button button__main button__long">
+                {loading ? <Spinner/> : null}
+                <button 
+                    className="button button__main button__long" 
+                    onClick={this.onUpdateOffset}
+                    disabled={loading}
+                    style={{'display': charEnded ? 'none' : 'block'}}>
                     <div className="inner">load more</div>
                 </button>
             </div>
