@@ -1,4 +1,4 @@
-import { Component } from 'react/cjs/react.development';
+import { useState, useEffect } from 'react/cjs/react.development';
 import PropTypes from 'prop-types';
 import MarvelService from '../../services/MarvelService';
 import Spinner from '../spinner/Spinner';
@@ -6,49 +6,39 @@ import ErrorMessage from '../errorMessage/ErrorMessage';
 import Skeleton from '../skeleton/Skeleton';
 import './charInfo.scss';
 
-class CharInfo extends Component {
-    state = {
-        char: null,
-        loading: false,
-        error: false
-    }
+const CharInfo = ({charId}) => {
+    const [char, setChar] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(false);
 
-    marvelService = new MarvelService();
+    const marvelService = new MarvelService();
 
-    updateChar = async () => {
-        const {charId} = this.props;
+    const updateChar = async () => {
         if (!charId) {
             return;
         }
-        this.setState({loading: true});
+        setLoading(true);
         try {
-            this.setState({char: await this.marvelService.getCharacter(charId), loading: false});
+            setChar(await marvelService.getCharacter(charId));
+            setLoading(false);
         } catch (error) {
-            this.setState({loading: false, error: true});
+            setLoading(false);
+            setError(true);
         }
     }
 
-    componentDidUpdate(prevProps) {
-        if (prevProps.charId !== this.props.charId) {
-            this.updateChar();
-        }
-    }
+    useEffect(() => {
+        updateChar();
+    }, [charId]);
 
-    componentDidMount() {
-        this.updateChar();
-    }
-
-    render() {
-        const {char, loading, error} = this.state;
-        return (
-            <div className="char__info">
-                {!(char || loading || error) ? <Skeleton/> : null}
-                {loading ? <Spinner/> : null}
-                {error ? <ErrorMessage/> : null}
-                {!loading && !error && char ? <View char={char}/> : null}
-            </div>
-        )
-    }
+    return (
+        <div className="char__info">
+            {!(char || loading || error) ? <Skeleton/> : null}
+            {loading ? <Spinner/> : null}
+            {error ? <ErrorMessage/> : null}
+            {!loading && !error && char ? <View char={char}/> : null}
+        </div>
+    )
 }
 
 const View = ({char}) => {
