@@ -2,30 +2,21 @@ import { useState, useEffect, useRef } from 'react/cjs/react.development';
 import PropTypes from 'prop-types';
 import Spinner from '../spinner/Spinner';
 import ErrorMessage from '../errorMessage/ErrorMessage';
-import MarvelService from '../../services/MarvelService';
+import useMarvelService from '../../services/MarvelService';
 import './charList.scss';
 
 const CharList = ({onCharSelected}) => {
     const [chars, setChars] = useState([]);
     const [offset, setOffset] = useState(210);
     const [charEnded, setCharEnded] = useState(false);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(false);
 
     const charsRefs = useRef([]);
-    const marvelService = new MarvelService();
+    const {loading, error, getAllCharacters} = useMarvelService();
 
     const updateChars = async () => {
-        setLoading(true);
-        const newChars = await marvelService.getAllCharacters(offset);
-        try {
-            setChars(chars => [...chars, ...newChars]);
-            setLoading(false);
-            setCharEnded(newChars.length < 9);
-        } catch(err) {
-            setLoading(false);
-            setError(true);
-        }
+        const newChars = await getAllCharacters(offset);
+        setChars(chars => [...chars, ...newChars]);
+        setCharEnded(newChars.length < 9);
     }
 
     const onSelectChar = (id, charIndex) => {
