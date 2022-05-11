@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react/cjs/react.development';
 import PropTypes from 'prop-types';
+import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import Spinner from '../spinner/Spinner';
 import ErrorMessage from '../errorMessage/ErrorMessage';
 import useMarvelService from '../../services/MarvelService';
@@ -36,15 +37,20 @@ const CharList = ({onCharSelected}) => {
                             ? {objectFit: 'contain', width: '200px', height: '170px'}
                             : {objectFit: 'cover'};
             return (
-                <li tabIndex={0} 
-                    key={char.id} 
-                    ref={el => charsRefs.current[i] = el} 
-                    className="char__item" 
-                    onFocus={() => {onSelectChar(char.id, i)}}
-                >
-                    <img style={style} src={char.thumbnail} alt={char.name}/>
-                    <div className="char__name">{char.name}</div>
-                </li>
+                <CSSTransition
+                    key={char.id}
+                    timeout={300}
+                    classNames="char__item"
+                    unmountOnExit>
+                    <li tabIndex={0} 
+                        ref={el => charsRefs.current[i] = el} 
+                        className="char__item" 
+                        onFocus={() => {onSelectChar(char.id, i)}}
+                    >
+                        <img style={style} src={char.thumbnail} alt={char.name}/>
+                        <div className="char__name">{char.name}</div>
+                    </li>
+                </CSSTransition>
             )
         });
     }
@@ -72,7 +78,9 @@ const CharList = ({onCharSelected}) => {
         <div className="char__list">
             {error ? <ErrorMessage/> : null}
             <ul className="char__grid">
-                {!error ? renderChars(chars) : null}
+                <TransitionGroup component={null}>
+                    {!error ? renderChars(chars) : null}
+                </TransitionGroup>
             </ul>
             {loading ? <Spinner/> : null}
             <button 
