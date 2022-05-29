@@ -10,7 +10,7 @@ import './searchChar.scss';
 const SearchChar = () => {
 
     const [char, setChar] = useState(null);
-    const {loading, error, findCharByName} = useMarvelService();
+    const {loading, process, setProcess, findCharByName} = useMarvelService();
 
     const result = char ? 
         char.name ? 
@@ -36,6 +36,7 @@ const SearchChar = () => {
             onSubmit={async ({charName}) => {
                 setChar(null);
                 setChar(await findCharByName(charName));
+                setProcess('confirmed');
             }}
             >
                 <Form>
@@ -57,7 +58,7 @@ const SearchChar = () => {
                 </Form>
             </Formik>
             {result}
-            {error ? <div className="char__search-critical-error"><ErrorMessage /></div> : null}
+            {process === 'error' ? <div className="char__search-critical-error"><ErrorMessage /></div> : null}
         </div>
     )
 }

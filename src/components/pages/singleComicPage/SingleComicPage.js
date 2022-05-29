@@ -2,18 +2,18 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import useMarvelService from '../../../services/MarvelService';
-import Spinner from '../../spinner/Spinner';
-import ErrorMessage from '../../errorMessage/ErrorMessage';
+import setContent from '../../../utils/setContent';
 
 import './singleComicPage.scss';
 
 const SingleComicPage = () => {
     const {comicId} = useParams();
     const [comic, setComic] = useState(null);
-    const {loading, error, getComic} = useMarvelService();
+    const {process, setProcess, getComic} = useMarvelService();
 
     const updateComic = async (id) => {
         setComic(await getComic(id));
+        setProcess('confirmed');
     }
 
     useEffect(() => {
@@ -22,29 +22,27 @@ const SingleComicPage = () => {
 
     return (
         <>
-            {loading && !comic ? <Spinner/> : null}
-            {error ? <ErrorMessage/> : null}
-            {comic ? <View comic={comic}/> : null}
+            {setContent(process, View, comic)}
         </>
     )
 }
 
-const View = ({comic}) => {
+const View = ({data}) => {
     return (
         <div className="single-comic">
             <Helmet>
                 <meta
                     name="description"
-                    content={`${comic.title} comics book`}/>
-                <title>{comic.title}</title>
+                    content={`${data.title} comics book`}/>
+                <title>{data.title}</title>
             </Helmet>
-            <img src={comic.thumbnail} alt={comic.title} className="single-comic__img"/>
+            <img src={data.thumbnail} alt={data.title} className="single-comic__img"/>
             <div className="single-comic__info">
-                <h2 className="single-comic__name">{comic.title}</h2>
-                <p className="single-comic__descr">{comic.description}</p>
-                <p className="single-comic__descr">{comic.pageCount}</p>
-                <p className="single-comic__descr">Language: {comic.language}</p>
-                <div className="single-comic__price">{comic.price}</div>
+                <h2 className="single-comic__name">{data.title}</h2>
+                <p className="single-comic__descr">{data.description}</p>
+                <p className="single-comic__descr">{data.pageCount}</p>
+                <p className="single-comic__descr">Language: {data.language}</p>
+                <div className="single-comic__price">{data.price}</div>
             </div>
             <Link to="/comics" className="single-comic__back">Back to all</Link>
         </div>

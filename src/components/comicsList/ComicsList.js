@@ -11,11 +11,12 @@ const ComicsList = () => {
     const [offset, setOffset] = useState(0);
     const [comicsEnded, setComicsEnded] = useState(false);
 
-    const {loading, error, getAllComics} = useMarvelService();
+    const {loading, process, setProcess, getAllComics} = useMarvelService();
 
     const updateComics = async () => {
         const newComics = await getAllComics(offset);
         setComics(comics => [...comics, ...newComics]);
+        setProcess('confirmed');
         setComicsEnded(newComics.length < 8);
     }
 
@@ -54,11 +55,11 @@ const ComicsList = () => {
 
     return (
         <div className="comics__list">
-            {error ? <ErrorMessage/> : null}
+            {process === 'error' ? <ErrorMessage/> : null}
             <ul className="comics__grid">
-                {!error ? renderComics(comics) : null}
+                {process !== 'error' ? renderComics(comics) : null}
             </ul>
-            {loading ? <Spinner/> : null}
+            {process === 'loading' ? <Spinner/> : null}
             <button 
                 className="button button__main button__long"
                 onClick={onUpdateOffset}

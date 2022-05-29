@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react/cjs/react.development';
 import PropTypes from 'prop-types';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
+import useMarvelService from '../../services/MarvelService';
 import Spinner from '../spinner/Spinner';
 import ErrorMessage from '../errorMessage/ErrorMessage';
-import useMarvelService from '../../services/MarvelService';
+
 import './charList.scss';
 
 const CharList = ({onCharSelected}) => {
@@ -12,11 +13,12 @@ const CharList = ({onCharSelected}) => {
     const [charEnded, setCharEnded] = useState(false);
 
     const charsRefs = useRef([]);
-    const {loading, error, getAllCharacters} = useMarvelService();
+    const {process, loading, setProcess, getAllCharacters} = useMarvelService();
 
     const updateChars = async () => {
         const newChars = await getAllCharacters(offset);
         setChars(chars => [...chars, ...newChars]);
+        setProcess('confirmed');
         setCharEnded(newChars.length < 9);
     }
 
@@ -32,7 +34,7 @@ const CharList = ({onCharSelected}) => {
     }
 
     const renderChars = (chars) => {
-        return chars.map((char, i) => {
+        const items = chars.map((char, i) => {
             const style = char.thumbnail === 'http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg'
                             ? {objectFit: 'contain', width: '200px', height: '170px'}
                             : {objectFit: 'cover'};
@@ -53,6 +55,13 @@ const CharList = ({onCharSelected}) => {
                 </CSSTransition>
             )
         });
+        return (
+            <ul className="char__grid">
+                <TransitionGroup component={null}>
+                    {items}
+                </TransitionGroup>
+            </ul>
+        )
     }
 
     const onUpdateOffset = () => {
@@ -76,14 +85,10 @@ const CharList = ({onCharSelected}) => {
 
     return (
         <div className="char__list">
-            {error ? <ErrorMessage/> : null}
-            <ul className="char__grid">
-                <TransitionGroup component={null}>
-                    {!error ? renderChars(chars) : null}
-                </TransitionGroup>
-            </ul>
-            {loading ? <Spinner/> : null}
-            <button 
+            {chars ? renderChars(chars) : null}
+            {process === 'loading' ? <Spinner/> : null}
+            {process === 'error' ? <ErrorMessage/> : null}
+            <button
                 className="button button__main button__long" 
                 onClick={onUpdateOffset}
                 disabled={loading}
