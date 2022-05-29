@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 import useMarvelService from '../../../services/MarvelService';
 import Spinner from '../../spinner/Spinner';
 import ErrorMessage from '../../errorMessage/ErrorMessage';
@@ -21,6 +22,12 @@ const SingleCharPage = () => {
 
     return (
         <>
+            <Helmet>
+                <meta
+                    name="description"
+                    content={char ? `${char.name} page` : 'Char page'}/>
+                <title>{char ? char.name : 'Char page'}</title>
+            </Helmet>
             <div className="single-comic">
                 {
                     char ? <>
